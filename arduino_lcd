@@ -1,0 +1,173 @@
+ en = 50, d4 = 49, d5 = 51, d6 = 53, d7 = 48;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+//.........................................................................................
+const int trigPin = 3;
+const int echoPin = 4;
+long duration;
+int distance;
+//.......................................................................................
+dht DHT;
+#define DHT11_PIN 42
+
+
+
+int state = HIGH;      // the current state of the output pin
+int state2 = HIGH;      // the current state of the output pin
+int reading;           // the current reading from the input pin
+int previous = 'A';    // the previous reading from the input pin
+
+
+
+// the follow variables are long's because the time, measured in miliseconds,
+// will quickly become a bigger number than can be stored in an int.
+long time = 0;         // the last time the output pin was toggled
+
+long debounce = 200;   // the debounce time, increase if the output flickers
+
+
+void setup() {
+
+  lcd.begin(16, 2); 
+  Serial.begin(9600);
+//sens................................................................................  
+  pinMode(trigPin, OUTPUT); 
+  pinMode(echoPin, INPUT); 
+  pinMode(5, OUTPUT); 
+  pinMode(2, OUTPUT);  
+  digitalWrite(2, HIGH);
+  digitalWrite(5, LOW);
+//temp.................................................................................
+  pinMode(40, OUTPUT); 
+  pinMode(44, OUTPUT); 
+  digitalWrite(40, LOW);
+  digitalWrite(44, HIGH);
+ 
+  
+}
+void loop() {
+a();
+
+}
+
+
+void a(){
+     char key = keypad.getKey();
+    reading = key;
+    
+  if (reading == 'A' && previous == 'B'||previous == !'A' && millis() - time > debounce) {
+    if (state == HIGH){
+      state = LOW;
+      lcd.clear();
+      }
+    else{
+      state = HIGH;
+    time = millis();    
+    }
+  }
+  if(state==HIGH){
+     sens();
+    }  
+  previous = reading;
+  
+   if (reading == 'B' && previous == 'A'||previous == !'B' && millis() - time > debounce) {
+    if (state2 == HIGH){
+      state2 = LOW;
+      lcd.clear();
+      }
+    else{
+      state2 = HIGH;
+    time = millis();    
+    }
+  }
+  if(state2==HIGH){
+     temp();
+    }  
+  previous = reading;
+  }
+
+  
+
+void kei(char m) {
+
+ 
+  if (m){
+    lcd.setCursor(7, 1);
+    lcd.print(m);
+  }  
+  }
+
+void sens() {
+ lcd.setCursor(0, 0);
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    double duration = pulseIn(echoPin, HIGH);
+    double distance = duration*0.034/2;
+   
+    Serial.print("Distance: ");
+    Serial.println(distance);
+    lcd.print("Dis-");
+    lcd.print(distance);
+  }
+
+void temp() {
+int chk = DHT.read11(DHT11_PIN);
+  Serial.print("Temperature = ");
+  Serial.println(DHT.temperature);
+  Serial.print("Humidity = ");
+  Serial.println(DHT.humidity);
+  lcd.setCursor(9, 0);
+  lcd.print("T-");
+  lcd.println(DHT.temperature);
+  lcd.setCursor(9, 1);
+  lcd.print("H-");
+  lcd.println(DHT.humidity);
+  }
+
+void joy() {
+  lcd.setCursor(0, 1);
+    lcd.print("Poz-"); 
+    
+     int ax = analogRead(x);
+    int ay = analogRead(y);
+
+
+if(ax>503 && ax<509 && ay>515 && ay<522){
+    Serial.print("center");
+    Serial.print("\n");
+    lcd.print("ce");
+   
+  
+    }
+  else if(ax<center&&ay>center){
+    Serial.print("levo odzgor");
+    Serial.print("\n");
+    lcd.print("lo");
+    
+    
+    }
+    else if(ax<center&&ay<center){
+    Serial.print("desno odzgor");
+    Serial.print("\n");
+    lcd.print("do");
+    
+
+    }
+   else if(ax>center&&ay<center){
+    Serial.print("desno spod");
+    Serial.print("\n");
+    lcd.print("ds");
+  
+
+    }
+   else if(ax>center&&ay>center){
+    Serial.print("levo spod");
+    Serial.print("\n");
+    lcd.print("ls");
+   
+
+    }
+
+  }
